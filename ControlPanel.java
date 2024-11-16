@@ -281,6 +281,11 @@ public class ControlPanel extends Frame
       return true;
     } else if (e.target == stepButton) {
       setStatus("STEP");
+
+      if (kernel.runs == 0) {
+        kernel.setPageReplacementAlgorithm(pageReplacingAlgChoice.getSelectedItem());
+      }
+
       kernel.step();
       if (kernel.runcycles == kernel.runs) {
         stepButton.disable();
