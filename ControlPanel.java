@@ -25,7 +25,10 @@ public class ControlPanel extends Frame
   Label lowValueLabel = new Label("0" , Label.LEFT) ;
   Label highValueLabel = new Label("0" , Label.LEFT) ;
 
-  Choice pageReplacingAlgChoice = new Choice() ;
+  Label pageReplacingAlgLabel = new Label("Page replacing algorithm:" , Label.LEFT);
+  Choice pageReplacingAlgChoice = new Choice();
+  Label cycleStepSleepTimeLabel = new Label("Cycle step sleep time:" , Label.LEFT);
+  TextField cycleStepSleepTime = new TextField("1000");
 
   public ControlPanel() 
   {
@@ -71,11 +74,6 @@ public class ControlPanel extends Frame
     exitButton.reshape( controlBtnLineOffsetY+=buttonWidth,25,buttonWidth,height );
     add( exitButton );
 
-    pageReplacingAlgChoice.reshape(controlBtnLineOffsetY+=buttonWidth,25,buttonWidth + 25,height);
-    pageReplacingAlgChoice.add("FIFO");
-    pageReplacingAlgChoice.add("LRU (matrix)");
-    add(pageReplacingAlgChoice);
-
     for (int i = 0; i < pages; i++)
     {
       pageButtons[i] = new Button("page " + i);
@@ -92,6 +90,24 @@ public class ControlPanel extends Frame
 
     // place labels lower than control buttons
     int labelsLineBaseOffsetY = height + 20;
+    int cycleStepSleepTimeLabelWidth = 125;
+    cycleStepSleepTimeLabel.reshape(285,labelsLineBaseOffsetY+0+25,cycleStepSleepTimeLabelWidth,height);
+    add(cycleStepSleepTimeLabel);
+
+    cycleStepSleepTime.reshape(285 + cycleStepSleepTimeLabelWidth + 10,labelsLineBaseOffsetY+0+25,buttonWidth + 25,20);
+    add(cycleStepSleepTime);
+
+    int cpageReplacingAlgLabelWidth = 150;
+    pageReplacingAlgLabel.reshape(285,labelsLineBaseOffsetY+0+50,cpageReplacingAlgLabelWidth,height);
+    add(pageReplacingAlgLabel);
+
+    pageReplacingAlgChoice.reshape(285 + cpageReplacingAlgLabelWidth,labelsLineBaseOffsetY+0+50,buttonWidth + 25,height);
+    pageReplacingAlgChoice.add("FIFO");
+    pageReplacingAlgChoice.add("LRU (matrix)");
+    add(pageReplacingAlgChoice);
+
+    labelsLineBaseOffsetY += 60;
+
     statusValueLabel.reshape( 345,labelsLineBaseOffsetY+0+25,100,height );
     add( statusValueLabel );
 
@@ -258,6 +274,7 @@ public class ControlPanel extends Frame
       stepButton.disable();
       resetButton.disable();
       kernel.setPageReplacementAlgorithm(pageReplacingAlgChoice.getSelectedItem());
+      kernel.cycleStepSleepTime = Integer.parseInt(cycleStepSleepTime.getText());
       kernel.run();
       setStatus("STOP");
       resetButton.enable();

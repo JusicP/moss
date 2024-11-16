@@ -23,6 +23,7 @@ public class Kernel extends Thread
   public int runcycles;
   public long block = (int) Math.pow(2,12);
   public static byte addressradix = 10;
+  public int cycleStepSleepTime = 1000; // ms
 
   private PageReplacementAlgorithmBase pageReplacementAlgorithm;
 
@@ -395,7 +396,7 @@ public class Kernel extends Thread
     {
       try 
       {
-        Thread.sleep(2000);
+        Thread.sleep(cycleStepSleepTime);
       } 
       catch(InterruptedException e) 
       {  
