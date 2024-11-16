@@ -24,7 +24,9 @@ public class Kernel extends Thread
   public long block = (int) Math.pow(2,12);
   public static byte addressradix = 10;
 
-  public void init( String commands , String config )  
+  private PageReplacementAlgorithmBase pageReplacementAlgorithm;
+
+  public void init( String commands , String config )
   {
     File f = new File( commands );
     command_file = commands;
@@ -47,7 +49,8 @@ public class Kernel extends Thread
     long low = 0;
     long addr = 0;
     long address_limit = (block * virtPageNum+1)-1;
-  
+    pageReplacementAlgorithm = null;
+
     if ( config != null )
     {
       f = new File ( config );
@@ -427,7 +430,7 @@ public class Kernel extends Thread
         {
           System.out.println( "READ " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel, pageReplacementAlgorithm );
         controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
@@ -457,7 +460,8 @@ public class Kernel extends Thread
         {
            System.out.println( "WRITE " + Long.toString(instruct.addr , addressradix) + " ... page fault" );
         }
-        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel );          controlPanel.pageFaultValueLabel.setText( "YES" );
+        PageFault.replacePage( memVector , virtPageNum , Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) , controlPanel, pageReplacementAlgorithm );
+        controlPanel.pageFaultValueLabel.setText( "YES" );
       } 
       else 
       {
@@ -507,5 +511,10 @@ public class Kernel extends Thread
     controlPanel.lowValueLabel.setText( "0" ) ;
     controlPanel.highValueLabel.setText( "0" ) ;
     init( command_file , config_file );
+  }
+
+  public void setPageReplacementAlgorithm(String algName)
+  {
+    pageReplacementAlgorithm = PageReplacementAlgorithmFactory.newPageReplacementAlgorithm(algName);
   }
 }

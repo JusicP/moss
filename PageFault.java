@@ -17,7 +17,7 @@ public class PageFault {
    * <p>
    * The page replacement algorithm included with the simulator is 
    * FIFO (first-in first-out).  A while or for loop should be used 
-   * to search through the current memory contents for a canidate 
+   * to search through the current memory contents for a candidate
    * replacement page.  In the case of FIFO the while loop is used 
    * to find the proper page while making sure that virtPageNum is 
    * not exceeded.
@@ -49,38 +49,13 @@ public class PageFault {
    * @param controlPanel represents the graphical element of the 
    *   simulator, and allows one to modify the current display.
    */
-  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel ) 
+  public static void replacePage ( Vector mem , int virtPageNum , int replacePageNum , ControlPanel controlPanel, PageReplacementAlgorithmBase alg )
   {
-    int count = 0;
-    int oldestPage = -1;
-    int oldestTime = 0;
-    int firstPage = -1;
-    int map_count = 0;
-    boolean mapped = false;
+    int pageToReplace = alg.getPageToReplace(mem, virtPageNum);
 
-    while ( ! (mapped) || count != virtPageNum ) {
-      Page page = ( Page ) mem.elementAt( count );
-      if ( page.physical != -1 ) {
-        if (firstPage == -1) {
-          firstPage = count;
-        }
-        if (page.inMemTime > oldestTime) {
-          oldestTime = page.inMemTime;
-          oldestPage = count;
-          mapped = true;
-        }
-      }
-      count++;
-      if ( count == virtPageNum ) {
-        mapped = true;
-      }
-    }
-    if (oldestPage == -1) {
-      oldestPage = firstPage;
-    }
-    Page page = ( Page ) mem.elementAt( oldestPage );
+    Page page = ( Page ) mem.elementAt( pageToReplace );
     Page nextpage = ( Page ) mem.elementAt( replacePageNum );
-    controlPanel.removePhysicalPage( oldestPage );
+    controlPanel.removePhysicalPage( pageToReplace );
     nextpage.physical = page.physical;
     controlPanel.addPhysicalPage( nextpage.physical , replacePageNum );
     page.inMemTime = 0;

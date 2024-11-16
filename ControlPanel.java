@@ -71,7 +71,7 @@ public class ControlPanel extends Frame
     exitButton.reshape( controlBtnLineOffsetY+=buttonWidth,25,buttonWidth,height );
     add( exitButton );
 
-    pageReplacingAlgChoice.reshape(controlBtnLineOffsetY+=buttonWidth,25,buttonWidth + 10,height);
+    pageReplacingAlgChoice.reshape(controlBtnLineOffsetY+=buttonWidth,25,buttonWidth + 25,height);
     pageReplacingAlgChoice.add("FIFO");
     pageReplacingAlgChoice.add("LRU (matrix)");
     add(pageReplacingAlgChoice);
@@ -257,6 +257,7 @@ public class ControlPanel extends Frame
       runButton.disable();
       stepButton.disable();
       resetButton.disable();
+      kernel.setPageReplacementAlgorithm(pageReplacingAlgChoice.getSelectedItem());
       kernel.run();
       setStatus("STOP");
       resetButton.enable();
