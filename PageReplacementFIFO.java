@@ -1,6 +1,6 @@
 import java.util.Vector;
 
-public class PageReplacementFIFO implements PageReplacementAlgorithmBase {
+public class PageReplacementFIFO extends PageReplacementAlgorithmBase {
     public int getPageToReplace(Vector mem, int virtPageNum) {
         int count = 0;
         int oldestPage = -1;

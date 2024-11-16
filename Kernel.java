@@ -419,6 +419,8 @@ public class Kernel extends Thread
     }
     if ( instruct.inst.startsWith( "READ" ) ) 
     {
+      pageReplacementAlgorithm.onMemReference(memVector , virtPageNum);
+
       Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
       if ( page.physical == -1 ) 
       {
@@ -449,6 +451,8 @@ public class Kernel extends Thread
     }
     if ( instruct.inst.startsWith( "WRITE" ) ) 
     {
+      pageReplacementAlgorithm.onMemReference(memVector , virtPageNum);
+
       Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
       if ( page.physical == -1 ) 
       {
