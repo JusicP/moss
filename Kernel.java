@@ -319,7 +319,7 @@ public class Kernel extends Thread
         }
       }
     }
-    for (i = 0; i < virtPageNum; i++)
+    for (i = 0; i <= virtPageNum; i++)
     {
       Page page = (Page) memVector.elementAt(i);
       if (page.physical == -1) 
