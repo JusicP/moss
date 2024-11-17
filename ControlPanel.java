@@ -6,14 +6,16 @@ import java.awt.event.WindowEvent;
 public class ControlPanel extends Frame 
 {
   private static final int INSET = 8;
+  private int pages;
+  Panel pagePanel;
   Kernel kernel ;
+  ScrollPane scrollPagePane = new ScrollPane();
   Button runButton = new Button("run");
   Button stepButton = new Button("step");
   Button resetButton = new Button("reset");
   Button exitButton = new Button("exit");
-  int pages = 64;
-  Button[] pageButtons = new Button[pages];
-  Label[] pageLabels = new Label[pages];
+  Button[] pageButtons;
+  Label[] pageLabels;
   Label statusValueLabel = new Label("STOP" , Label.LEFT) ;
   Label timeValueLabel = new Label("0" , Label.LEFT) ;
   Label instructionValueLabel = new Label("NONE" , Label.LEFT) ;
@@ -78,34 +80,10 @@ public class ControlPanel extends Frame
     exitButton.setBackground(Color.lightGray);
     controlBtnPanel.add(exitButton);
 
-    //Panel pagesPanel = new Panel(null);
     panel.add(controlBtnPanel, BorderLayout.NORTH);
     add(panel);
 
-    // page list
-    ScrollPane scrollPane = new ScrollPane();
-    Panel pagePanel = new Panel(new GridLayout(pages + 1, 2, 5, 5));
-
-    Label virtualTwoLabel = new Label("virtual", Label.CENTER);
-    pagePanel.add(virtualTwoLabel);
-
-    Label physicalOneLabel = new Label("physical", Label.CENTER);
-    pagePanel.add(physicalOneLabel);
-
-    // set up page labels and buttons
-    for (int i = 0; i < pages; i++) {
-      pageButtons[i] = new Button("page " + i);
-      pageButtons[i].setForeground(Color.magenta);
-      pageButtons[i].setBackground(Color.lightGray);
-      pagePanel.add(pageButtons[i]);
-
-      pageLabels[i] = new Label("page " + i);
-      pageLabels[i].setForeground(Color.red);
-      pageLabels[i].setFont(new Font("Courier", 0, 10));
-      pagePanel.add(pageLabels[i]);
-    }
-    scrollPane.add(pagePanel);
-    panel.add(scrollPane, BorderLayout.CENTER);
+    panel.add(scrollPagePane, BorderLayout.CENTER);
 
     // set up status labels
     Panel rightPanel = new Panel(new GridLayout(16, 2));
@@ -175,6 +153,42 @@ public class ControlPanel extends Frame
 
     kernel.init( commands , config );
     show();
+  }
+
+  public void initPageButtons(int virtPageNum) {
+    pages = virtPageNum + 1;
+
+    if (pagePanel != null) {
+      pagePanel.removeAll();
+    } else {
+      pagePanel = new Panel(new GridLayout(pages + 1, 2, 5, 5));
+      scrollPagePane.add(pagePanel);
+    }
+
+    // set up page labels and buttons
+    Label virtualTwoLabel = new Label("virtual", Label.CENTER);
+    pagePanel.add(virtualTwoLabel);
+
+    Label physicalOneLabel = new Label("physical", Label.CENTER);
+    pagePanel.add(physicalOneLabel);
+
+    // page btns and labels
+    pageButtons = new Button[pages];
+    pageLabels = new Label[pages];
+
+    for (int i = 0; i < pages; i++) {
+      pageButtons[i] = new Button("page " + i);
+      pageButtons[i].setForeground(Color.magenta);
+      pageButtons[i].setBackground(Color.lightGray);
+      pagePanel.add(pageButtons[i]);
+
+      pageLabels[i] = new Label("page " + i);
+      pageLabels[i].setForeground(Color.red);
+      pageLabels[i].setFont(new Font("Courier", 0, 10));
+      pagePanel.add(pageLabels[i]);
+    }
+
+    revalidate();
   }
 
   public void paintPage( Page page ) 

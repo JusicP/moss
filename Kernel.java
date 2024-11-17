@@ -4,10 +4,7 @@ import java.util.*;
 
 public class Kernel extends Thread
 {
-  // The number of virtual pages must be fixed at 63 due to
-  // dependencies in the GUI
-  private static int virtPageNum = 63;
-
+  private static int virtPageNum;
   private String output = null;
   private static final String lineSeparator = 
     System.getProperty("line.separator");
@@ -67,11 +64,13 @@ public class Kernel extends Thread
             {
               tmp = st.nextToken();
               virtPageNum = Common.s2i(st.nextToken()) - 1;
-              if ( virtPageNum < 2 || virtPageNum > 63 )
+              if ( virtPageNum < 2 )
               {
                 System.out.println("MemoryManagement: numpages out of bounds.");
                 System.exit(-1);
               }
+
+              controlPanel.initPageButtons(virtPageNum);
               address_limit = (block * virtPageNum+1)-1;
             }
           }
@@ -320,7 +319,7 @@ public class Kernel extends Thread
         }
       }
     }
-    for (i = 0; i < virtPageNum; i++) 
+    for (i = 0; i < virtPageNum; i++)
     {
       Page page = (Page) memVector.elementAt(i);
       if (page.physical == -1) 
@@ -418,11 +417,10 @@ public class Kernel extends Thread
     {
       controlPanel.pageFaultValueLabel.setText( "NO" );
     }
-    if ( instruct.inst.startsWith( "READ" ) ) 
-    {
-      pageReplacementAlgorithm.onMemReference(memVector , virtPageNum);
 
-      Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+    Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
+    if ( instruct.inst.startsWith( "READ" ) )
+    {
       if ( page.physical == -1 ) 
       {
         if ( doFileLog )
@@ -452,9 +450,6 @@ public class Kernel extends Thread
     }
     if ( instruct.inst.startsWith( "WRITE" ) ) 
     {
-      pageReplacementAlgorithm.onMemReference(memVector , virtPageNum);
-
-      Page page = ( Page ) memVector.elementAt( Virtual2Physical.pageNum( instruct.addr , virtPageNum , block ) );
       if ( page.physical == -1 ) 
       {
         if ( doFileLog )
@@ -482,9 +477,12 @@ public class Kernel extends Thread
         }
       }
     }
+
+    pageReplacementAlgorithm.onMemReference(virtPageNum, page.physical);
+
     for ( i = 0; i < virtPageNum; i++ ) 
     {
-      Page page = ( Page ) memVector.elementAt( i );
+      page = ( Page ) memVector.elementAt( i );
       if ( page.R == 1 && page.lastTouchTime == 10 ) 
       {
         page.R = 0;
@@ -518,8 +516,7 @@ public class Kernel extends Thread
     init( command_file , config_file );
   }
 
-  public void setPageReplacementAlgorithm(String algName)
-  {
+  public void setPageReplacementAlgorithm(String algName) {
     pageReplacementAlgorithm = PageReplacementAlgorithmFactory.newPageReplacementAlgorithm(algName);
   }
 }
