@@ -7,7 +7,6 @@ public class ControlPanel extends Frame
 {
   private static final int INSET = 8;
   Kernel kernel ;
-  Panel panel = new Panel(null);
   Button runButton = new Button("run");
   Button stepButton = new Button("step");
   Button resetButton = new Button("reset");
@@ -29,9 +28,7 @@ public class ControlPanel extends Frame
   Label lowValueLabel = new Label("0" , Label.LEFT) ;
   Label highValueLabel = new Label("0" , Label.LEFT) ;
 
-  Label pageReplacingAlgLabel = new Label("Page replacing algorithm:" , Label.LEFT);
   Choice pageReplacingAlgChoice = new Choice();
-  Label cycleStepSleepTimeLabel = new Label("Cycle step sleep time:" , Label.LEFT);
   TextField cycleStepSleepTime = new TextField("1000");
 
   public ControlPanel() 
@@ -48,205 +45,133 @@ public class ControlPanel extends Frame
   {
     kernel = useKernel ;
     kernel.setControlPanel( this );
-    setLayout( new BorderLayout() );
+    setLayout( new CardLayout(10, 20) );
     setBackground( Color.white );
     setForeground( Color.black );
     setSize( 635 + INSET, 545 + INSET );
-    panel.setSize( 635 , 545 );
     setFont( new Font( "Courier", 0, 12 ) );
-    setResizable(false);
-
-    add(panel, BorderLayout.CENTER);
 
     // dispose frame on titlebar close button pressed
     addWindowListener(new WindowAdapter() {
-        public void windowClosing(WindowEvent we) {
-          dispose();
-        }
-      }
+                        public void windowClosing(WindowEvent we) {
+                          dispose();
+                        }
+                      }
     );
 
-    int buttonWidth = 70;
-    int height = 15;
+    Panel panel = new Panel(new BorderLayout());
+    Panel controlBtnPanel = new Panel(new FlowLayout(FlowLayout.LEFT));
 
-    int controlBtnLineOffsetY = 0;
-    runButton.setForeground( Color.blue );
-    runButton.setBackground( Color.lightGray );
-    runButton.reshape( controlBtnLineOffsetY,25,buttonWidth,height );
-    panel.add( runButton );
+    runButton.setForeground(Color.blue);
+    runButton.setBackground(Color.lightGray);
+    controlBtnPanel.add(runButton);
 
-    stepButton.setForeground( Color.blue );
-    stepButton.setBackground( Color.lightGray );
-    stepButton.reshape( controlBtnLineOffsetY+=buttonWidth,25,buttonWidth,height );
-    panel.add( stepButton );
+    stepButton.setForeground(Color.blue);
+    stepButton.setBackground(Color.lightGray);
+    controlBtnPanel.add(stepButton);
 
-    resetButton.setForeground( Color.blue );
-    resetButton.setBackground( Color.lightGray );
-    resetButton.reshape( controlBtnLineOffsetY+=buttonWidth,25,buttonWidth,height );
-    panel.add( resetButton );
+    resetButton.setForeground(Color.blue);
+    resetButton.setBackground(Color.lightGray);
+    controlBtnPanel.add(resetButton);
 
-    exitButton.setForeground( Color.blue );
-    exitButton.setBackground( Color.lightGray );
-    exitButton.reshape( controlBtnLineOffsetY+=buttonWidth,25,buttonWidth,height );
-    panel.add( exitButton );
+    exitButton.setForeground(Color.blue);
+    exitButton.setBackground(Color.lightGray);
+    controlBtnPanel.add(exitButton);
 
-    for (int i = 0; i < pages; i++)
-    {
+    //Panel pagesPanel = new Panel(null);
+    panel.add(controlBtnPanel, BorderLayout.NORTH);
+    add(panel);
+
+    // page list
+    ScrollPane scrollPane = new ScrollPane();
+    Panel pagePanel = new Panel(new GridLayout(pages + 1, 2, 5, 5));
+
+    Label virtualTwoLabel = new Label("virtual", Label.CENTER);
+    pagePanel.add(virtualTwoLabel);
+
+    Label physicalOneLabel = new Label("physical", Label.CENTER);
+    pagePanel.add(physicalOneLabel);
+
+    // set up page labels and buttons
+    for (int i = 0; i < pages; i++) {
       pageButtons[i] = new Button("page " + i);
-      pageButtons[i].reshape(
-              i < pages / 2 ? 0 : 140,
-              ((i % (pages / 2)) + 2)*15+25,
-              buttonWidth,
-              height
-      );
-      pageButtons[i].setForeground( Color.magenta );
-      pageButtons[i].setBackground( Color.lightGray );
-      panel.add(pageButtons[i]);
+      pageButtons[i].setForeground(Color.magenta);
+      pageButtons[i].setBackground(Color.lightGray);
+      pagePanel.add(pageButtons[i]);
+
+      pageLabels[i] = new Label("page " + i);
+      pageLabels[i].setForeground(Color.red);
+      pageLabels[i].setFont(new Font("Courier", 0, 10));
+      pagePanel.add(pageLabels[i]);
     }
+    scrollPane.add(pagePanel);
+    panel.add(scrollPane, BorderLayout.CENTER);
 
-    // place labels lower than control buttons
-    int labelsLineBaseOffsetY = height + 20;
-    int cycleStepSleepTimeLabelWidth = 125;
-    cycleStepSleepTimeLabel.reshape(285,labelsLineBaseOffsetY+0+25,cycleStepSleepTimeLabelWidth,height);
-    panel.add(cycleStepSleepTimeLabel);
+    // set up status labels
+    Panel rightPanel = new Panel(new GridLayout(16, 2));
+    Label cycleStepSleepTimeLabel = new Label("Cycle step sleep time:" , Label.LEFT);
+    rightPanel.add(cycleStepSleepTimeLabel);
+    rightPanel.add(cycleStepSleepTime);
 
-    cycleStepSleepTime.reshape(285 + cycleStepSleepTimeLabelWidth + 10,labelsLineBaseOffsetY+0+25,buttonWidth + 25,20);
-    panel.add(cycleStepSleepTime);
-
-    int cpageReplacingAlgLabelWidth = 150;
-    pageReplacingAlgLabel.reshape(285,labelsLineBaseOffsetY+0+50,cpageReplacingAlgLabelWidth,height);
-    panel.add(pageReplacingAlgLabel);
-
-    pageReplacingAlgChoice.reshape(285 + cpageReplacingAlgLabelWidth,labelsLineBaseOffsetY+0+50,buttonWidth + 25,height);
+    Label pageReplacingAlgLabel = new Label("Page replacing algorithm:" , Label.LEFT);
+    rightPanel.add(pageReplacingAlgLabel);
     pageReplacingAlgChoice.add("FIFO");
     pageReplacingAlgChoice.add("LRU (matrix)");
-    panel.add(pageReplacingAlgChoice);
+    rightPanel.add(pageReplacingAlgChoice);
 
-    labelsLineBaseOffsetY += 60;
+    Label statusLabel = new Label("status: ", Label.LEFT);
+    rightPanel.add(statusLabel);
+    rightPanel.add(statusValueLabel);
 
-    statusValueLabel.reshape( 345,labelsLineBaseOffsetY+0+25,100,height );
-    panel.add( statusValueLabel );
+    Label timeLabel = new Label("time: ", Label.LEFT);
+    rightPanel.add(timeLabel);
+    rightPanel.add(timeValueLabel);
 
-    timeValueLabel.reshape( 345,labelsLineBaseOffsetY+15+25,100,height );
-    panel.add( timeValueLabel );
+    Label instructionLabel = new Label("instruction: ", Label.LEFT);
+    rightPanel.add(instructionLabel);
+    rightPanel.add(instructionValueLabel);
 
-    instructionValueLabel.reshape( 385,labelsLineBaseOffsetY+45+25,100,height );
-    panel.add( instructionValueLabel );
+    Label addressLabel = new Label("address: ", Label.LEFT);
+    rightPanel.add(addressLabel);
+    rightPanel.add(addressValueLabel);
 
-    addressValueLabel.reshape(385,labelsLineBaseOffsetY+60+25,230,height);
-    panel.add( addressValueLabel );
+    Label pageFaultLabel = new Label("page fault: ", Label.LEFT);
+    rightPanel.add(pageFaultLabel);
+    rightPanel.add(pageFaultValueLabel);
 
-    pageFaultValueLabel.reshape( 385,labelsLineBaseOffsetY+90+25,100,height );
-    panel.add( pageFaultValueLabel );
+    Label virtualPageLabel = new Label("virtual page: ", Label.LEFT);
+    rightPanel.add(virtualPageLabel);
+    rightPanel.add(virtualPageValueLabel);
 
-    virtualPageValueLabel.reshape( 395,labelsLineBaseOffsetY+120+25,200,height );
-    panel.add( virtualPageValueLabel );
+    Label physicalPageLabel = new Label("physical page: ", Label.LEFT);
+    rightPanel.add(physicalPageLabel);
+    rightPanel.add(physicalPageValueLabel);
 
-    physicalPageValueLabel.reshape( 395,labelsLineBaseOffsetY+135+25,200,height );
-    panel.add( physicalPageValueLabel );
+    Label RLabel = new Label("R: ", Label.LEFT);
+    rightPanel.add(RLabel);
+    rightPanel.add(RValueLabel);
 
-    RValueLabel.reshape( 395,labelsLineBaseOffsetY+150+25,200,height );
-    panel.add( RValueLabel );
+    Label MLabel = new Label("M: ", Label.LEFT);
+    rightPanel.add(MLabel);
+    rightPanel.add(MValueLabel);
 
-    MValueLabel.reshape( 395,labelsLineBaseOffsetY+165+25,200,height );
-    panel.add( MValueLabel );
+    Label inMemTimeLabel = new Label("inMemTime: ", Label.LEFT);
+    rightPanel.add(inMemTimeLabel);
+    rightPanel.add(inMemTimeValueLabel);
 
-    inMemTimeValueLabel.reshape(395,labelsLineBaseOffsetY+180+25,200,height );
-    panel.add( inMemTimeValueLabel );
+    Label lastTouchTimeLabel = new Label("lastTouchTime: ", Label.LEFT);
+    rightPanel.add(lastTouchTimeLabel);
+    rightPanel.add(lastTouchTimeValueLabel);
 
-    lastTouchTimeValueLabel.reshape( 395,labelsLineBaseOffsetY+195+25,200,height );
-    panel.add( lastTouchTimeValueLabel );
+    Label lowLabel = new Label("low: ", Label.LEFT);
+    rightPanel.add(lowLabel);
+    rightPanel.add(lowValueLabel);
 
-    lowValueLabel.reshape( 395,labelsLineBaseOffsetY+210+25,230,height );
-    panel.add( lowValueLabel );
+    Label highLabel = new Label("high: ", Label.LEFT);
+    rightPanel.add(highLabel);
+    rightPanel.add(highValueLabel);
 
-    highValueLabel.reshape( 395,labelsLineBaseOffsetY+225+25,230,height );
-    panel.add( highValueLabel );
-
-    Label virtualOneLabel = new Label( "virtual" , Label.CENTER) ;
-    virtualOneLabel.reshape(0,15+25,70,height);
-    panel.add(virtualOneLabel);
-
-    Label virtualTwoLabel = new Label( "virtual" , Label.CENTER) ;
-    virtualTwoLabel.reshape(140,15+25,70,height);
-    panel.add(virtualTwoLabel);
-
-    Label physicalOneLabel = new Label( "physical" , Label.CENTER) ;
-    physicalOneLabel.reshape(70,15+25,70,height);
-    panel.add(physicalOneLabel);
-
-    Label physicalTwoLabel = new Label( "physical" , Label.CENTER) ;
-    physicalTwoLabel.reshape(210,15+25,70,height);
-    panel.add(physicalTwoLabel);
-
-    Label statusLabel = new Label("status: " , Label.LEFT) ;
-    statusLabel.reshape(285,labelsLineBaseOffsetY+0+25,65,height);
-    panel.add(statusLabel);
-
-    Label timeLabel = new Label("time: " , Label.LEFT) ;
-    timeLabel.reshape(285,labelsLineBaseOffsetY+15+25,50,height);
-    panel.add(timeLabel);
-
-    Label instructionLabel = new Label("instruction: " , Label.LEFT) ;
-    instructionLabel.reshape(285,labelsLineBaseOffsetY+45+25,100,height);
-    panel.add(instructionLabel);
-
-    Label addressLabel = new Label("address: " , Label.LEFT) ;
-    addressLabel.reshape(285,labelsLineBaseOffsetY+60+25,85,height);
-    panel.add(addressLabel);
-
-    Label pageFaultLabel = new Label("page fault: " , Label.LEFT) ;
-    pageFaultLabel.reshape(285,labelsLineBaseOffsetY+90+25,100,height);
-    panel.add(pageFaultLabel);
-
-    Label virtualPageLabel = new Label("virtual page: " , Label.LEFT) ;
-    virtualPageLabel.reshape(285,labelsLineBaseOffsetY+120+25,110,height);
-    panel.add(virtualPageLabel);
-
-    Label physicalPageLabel = new Label("physical page: " , Label.LEFT) ;
-    physicalPageLabel.reshape(285,labelsLineBaseOffsetY+135+25,110,height);
-    panel.add(physicalPageLabel);
-
-    Label RLabel = new Label("R: ", Label.LEFT) ;
-    RLabel.reshape(285,labelsLineBaseOffsetY+150+25,110,height);
-    panel.add(RLabel);
-
-    Label MLabel = new Label("M: " , Label.LEFT) ;
-    MLabel.reshape(285,labelsLineBaseOffsetY+165+25,110,height);
-    panel.add(MLabel);
-
-    Label inMemTimeLabel = new Label("inMemTime: " , Label.LEFT) ;
-    inMemTimeLabel.reshape(285,labelsLineBaseOffsetY+180+25,110,height);
-    panel.add(inMemTimeLabel);
-
-    Label lastTouchTimeLabel = new Label("lastTouchTime: " , Label.LEFT) ;
-    lastTouchTimeLabel.reshape(285,labelsLineBaseOffsetY+195+25,110,height);
-    panel.add(lastTouchTimeLabel);
-
-    Label lowLabel = new Label("low: " , Label.LEFT) ;
-    lowLabel.reshape(285,labelsLineBaseOffsetY+210+25,110,height);
-    panel.add(lowLabel);
-
-    Label highLabel = new Label("high: " , Label.LEFT) ;
-    highLabel.reshape(285,labelsLineBaseOffsetY+225+25,110,height);
-    panel.add(highLabel);
-
-    for (int i = 0; i < pages; i++)
-    {
-      pageLabels[i] = new Label("page " + i);
-
-      int y = (i % (pages / 2) + 2) * 15 +25;
-
-      pageLabels[i].reshape(
-              i < pages / 2 ? 70 : 210,
-              y,
-              70,
-              height
-      );
-      pageLabels[i].setForeground( Color.red );
-      pageLabels[i].setFont( new Font( "Courier", 0, 10 ) );
-      panel.add(pageLabels[i]);
-    }
+    panel.add(rightPanel, BorderLayout.EAST);
 
     kernel.init( commands , config );
     show();
