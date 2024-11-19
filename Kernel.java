@@ -5,6 +5,7 @@ import java.util.*;
 public class Kernel extends Thread
 {
   private static int virtPageNum;
+  private static int frameNum;
   private String output = null;
   private static final String lineSeparator = 
     System.getProperty("line.separator");
@@ -47,7 +48,10 @@ public class Kernel extends Thread
     long low = 0;
     long addr = 0;
     long address_limit = (block * virtPageNum+1)-1;
+    frameNum = 0;
     pageReplacementAlgorithm = null;
+
+    Common.initRand(1);
 
     if ( config != null )
     {
@@ -105,7 +109,7 @@ public class Kernel extends Thread
               {
                 physical = Common.s2i(tmp);
               }
-              if ((0 > id || id > virtPageNum) || (-1 > physical || physical > ((virtPageNum - 1) / 2)))
+              if ((0 > id || id > virtPageNum) || (-1 > physical || physical > (virtPageNum - 1)))
               {
                 System.out.println("MemoryManagement: Invalid page value in " + config);
                 System.exit(-1);
@@ -298,6 +302,7 @@ public class Kernel extends Thread
         if (tmp_page.physical == page.physical && page.physical >= 0)
         {
           physical_count++;
+          frameNum++;
         }
       }
       if (physical_count > 1)
@@ -307,18 +312,19 @@ public class Kernel extends Thread
       }
       physical_count = 0;
     }
-    if ( map_count < ( virtPageNum +1 ) / 2 )
-    {
-      for (i = 0; i < virtPageNum; i++) 
-      {
-        Page page = (Page) memVector.elementAt(i);
-        if ( page.physical == -1 && map_count < ( virtPageNum + 1 ) / 2 )
-        {
-          page.physical = i;
-          map_count++;
-        }
-      }
-    }
+    // FIXME: why?
+//    if ( map_count < ( virtPageNum +1 ) / 2 )
+//    {
+//      for (i = 0; i < virtPageNum; i++)
+//      {
+//        Page page = (Page) memVector.elementAt(i);
+//        if ( page.physical == -1 && map_count < ( virtPageNum + 1 ) / 2 )
+//        {
+//          page.physical = i;
+//          map_count++;
+//        }
+//      }
+//    }
     for (i = 0; i <= virtPageNum; i++)
     {
       Page page = (Page) memVector.elementAt(i);
@@ -478,7 +484,7 @@ public class Kernel extends Thread
       }
     }
 
-    pageReplacementAlgorithm.onMemReference(virtPageNum, page.physical);
+    pageReplacementAlgorithm.onMemReference(frameNum, page.physical);
 
     for ( i = 0; i < virtPageNum; i++ ) 
     {
@@ -518,5 +524,6 @@ public class Kernel extends Thread
 
   public void setPageReplacementAlgorithm(String algName) {
     pageReplacementAlgorithm = PageReplacementAlgorithmFactory.newPageReplacementAlgorithm(algName);
+    pageReplacementAlgorithm.init(frameNum);
   }
 }

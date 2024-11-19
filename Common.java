@@ -1,4 +1,9 @@
 public class Common {
+  static java.util.Random generator;
+
+  static public void initRand(int seed) {
+    generator = new java.util.Random(seed);
+  }
 
   static public long s2l ( String s ) 
   {
@@ -44,8 +49,6 @@ public class Common {
   {
     long i = -1;
 
-    java.util.Random generator = new
-    java.util.Random(System.currentTimeMillis());
     while (i > MAX || i < 0)
     {
       int intOne = generator.nextInt();
